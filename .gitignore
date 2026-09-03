@@ -1,0 +1,31 @@
+# Virtual Environments
+.venv/
+venv/
+ENV/
+env/
+
+# Python Cache & Compiled files
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Distribution / Packaging
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+*.egg-info/
+
+# Jupyter Notebook Checkpoints
+.ipynb_checkpoints
+
+# VS Code & PyCharm
+.vscode/
+.idea/
+
+# Environment Variables / Configs
+.env
+*.local

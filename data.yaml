@@ -1,0 +1,21 @@
+# Data config cho RepShuffleFormer.
+#
+# path: trỏ tới thư mục gốc dataset (chứa các thư mục <group>, vd cây trồng).
+# Code tự phát hiện 1 trong 2 cấu trúc bên dưới path, không cần khai báo thêm:
+#
+#   1) path/<group>/<class>/*.jpg
+#      -> không có split sẵn, code tự tách val theo tỷ lệ (mặc định 15%),
+#         không có test riêng.
+#
+#   2) path/<group>/train_set/<class>/*.jpg
+#      path/<group>/test_set/<class>/*.jpg
+#      -> dùng đúng train_set/test_set có sẵn, val tách 15% từ train_set.
+#
+# Tên class cuối cùng = "<group>_<class>" (vd "Cashew_healthy").
+
+path: C:/Users/ThisPC/Desktop/Raw Data/CCMT Dataset
+
+# Tuỳ chọn — để trống nếu không chắc, code sẽ tự quét và báo số class thật
+# ra console (báo warning nếu nc ở đây không khớp số class quét được).
+nc: 22
+names: []

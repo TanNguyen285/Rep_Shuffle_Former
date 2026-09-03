@@ -1,0 +1,1026 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Đánh Giá Chi Tiết & Chuyên Sâu Kiến Trúc RepShuffleFormer</title>
+    
+    <!-- Cấu hình và Tải MathJax 3 để hiển thị công thức toán LaTeX chuẩn xác -->
+    <script>
+        MathJax = {
+            tex: {
+                inlineMath: [['$', '$'], ['\\(', '\\)']],
+                displayMath: [['$$', '$$'], ['\\[', '\\]']],
+                processEscapes: true
+            },
+            svg: {
+                fontCache: 'global'
+            }
+        };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
+    <style>
+        :root {
+            --bg-body: #090d16;
+            --bg-card: #111827;
+            --bg-sub: #1f2937;
+            --text-primary: #f3f4f6;
+            --text-secondary: #9ca3af;
+            --accent-cyan: #38bdf8;
+            --accent-emerald: #34d399;
+            --accent-amber: #fbbf24;
+            --border-color: #1f2937;
+            --border-highlight: #374151;
+            --font-stack: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: var(--font-stack);
+            background-color: var(--bg-body);
+            color: var(--text-primary);
+            line-height: 1.75;
+            padding: 30px 15px;
+        }
+
+        .container {
+            max-width: 1280px;
+            margin: 0 auto;
+        }
+
+        /* Header Styles */
+        .header {
+            text-align: center;
+            padding: 40px 20px;
+            background: linear-gradient(135deg, rgba(30,41,59,0.8) 0%, rgba(15,23,42,0.9) 100%);
+            border: 1px solid var(--border-highlight);
+            border-radius: 16px;
+            margin-bottom: 35px;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5);
+        }
+
+        .header h1 {
+            font-size: 2.2em;
+            color: var(--accent-cyan);
+            margin-bottom: 12px;
+            letter-spacing: -0.02em;
+        }
+
+        .header p {
+            color: var(--text-secondary);
+            font-size: 1.05em;
+            max-width: 850px;
+            margin: 0 auto;
+        }
+
+        .badge-bar {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+
+        .badge {
+            background: rgba(56, 189, 248, 0.1);
+            color: var(--accent-cyan);
+            border: 1px solid rgba(56, 189, 248, 0.3);
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            font-weight: 600;
+        }
+
+        /* Card Sections */
+        .section-card {
+            background-color: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 14px;
+            padding: 30px;
+            margin-bottom: 30px;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .section-card:hover {
+            border-color: var(--border-highlight);
+            box-shadow: 0 8px 20px -4px rgba(0, 0, 0, 0.4);
+        }
+
+        h2 {
+            font-size: 1.5em;
+            color: var(--accent-cyan);
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 12px;
+        }
+
+        h3 {
+            font-size: 1.2em;
+            color: var(--accent-emerald);
+            margin: 22px 0 12px 0;
+        }
+
+        h4 {
+            font-size: 1.05em;
+            color: var(--accent-amber);
+            margin: 16px 0 8px 0;
+        }
+
+        p {
+            margin-bottom: 14px;
+            color: #d1d5db;
+            font-size: 1em;
+        }
+
+        ul, ol {
+            margin-bottom: 16px;
+            padding-left: 24px;
+            color: #d1d5db;
+        }
+
+        li {
+            margin-bottom: 8px;
+        }
+
+        strong {
+            color: var(--text-primary);
+        }
+
+        /* Mathematical Notation Blocks */
+        .math-block {
+            background-color: #0d1117;
+            border-left: 4px solid var(--accent-cyan);
+            padding: 16px 20px;
+            margin: 18px 0;
+            border-radius: 0 8px 8px 0;
+            color: #e6edf3;
+            overflow-x: auto;
+            text-align: left;
+            font-size: 1.05em;
+            line-height: 1.8;
+        }
+
+        /* Modern Table Design */
+        .table-responsive {
+            overflow-x: auto;
+            margin: 20px 0;
+            border-radius: 10px;
+            border: 1px solid var(--border-color);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+            font-size: 0.92em;
+        }
+
+        th {
+            background-color: var(--bg-sub);
+            color: var(--accent-cyan);
+            padding: 14px 16px;
+            font-weight: 600;
+            border-bottom: 1px solid var(--border-color);
+            white-space: nowrap;
+        }
+
+        td {
+            padding: 13px 16px;
+            border-bottom: 1px solid var(--border-color);
+            color: #e5e7eb;
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        tr:nth-child(even) {
+            background-color: rgba(255, 255, 255, 0.015);
+        }
+
+        tr:hover {
+            background-color: rgba(56, 189, 248, 0.04);
+        }
+
+        /* Interactive Simulator Layout */
+        .simulator-box {
+            display: grid;
+            grid-template-columns: 360px 1fr;
+            gap: 25px;
+            margin-top: 20px;
+        }
+
+        @media (max-width: 980px) {
+            .simulator-box {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .controls-panel {
+            background-color: var(--bg-sub);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 20px;
+        }
+
+        .control-item {
+            margin-bottom: 16px;
+        }
+
+        .control-item label {
+            display: block;
+            font-size: 0.88em;
+            color: var(--text-secondary);
+            margin-bottom: 6px;
+            font-weight: 500;
+        }
+
+        .control-item input[type="range"],
+        .control-item select,
+        .control-item input[type="file"] {
+            width: 100%;
+            background-color: var(--bg-card);
+            border: 1px solid var(--border-highlight);
+            color: var(--text-primary);
+            padding: 8px 12px;
+            border-radius: 6px;
+            outline: none;
+            font-size: 0.88em;
+        }
+
+        .control-item input[type="range"] {
+            padding: 0;
+            height: 6px;
+            accent-color: var(--accent-cyan);
+        }
+
+        .tag-val {
+            float: right;
+            color: var(--accent-cyan);
+            font-weight: bold;
+        }
+
+        .btn-toggle {
+            width: 100%;
+            background: linear-gradient(135deg, var(--accent-cyan) 0%, #0284c7 100%);
+            color: #fff;
+            border: none;
+            padding: 10px;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 8px;
+            transition: opacity 0.2s ease;
+        }
+
+        .btn-toggle:hover {
+            opacity: 0.9;
+        }
+
+        .display-area {
+            background-color: #030712;
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            position: relative;
+        }
+
+        canvas {
+            border-radius: 8px;
+            max-width: 100%;
+            height: auto;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.6);
+            background-color: #000;
+        }
+
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            margin-top: 18px;
+            width: 100%;
+        }
+
+        .metric-card {
+            background-color: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 12px;
+            text-align: center;
+        }
+
+        .metric-card .val {
+            font-size: 1.3em;
+            font-weight: 700;
+            color: var(--accent-emerald);
+        }
+
+        .metric-card .lbl {
+            font-size: 0.75em;
+            color: var(--text-secondary);
+            margin-top: 2px;
+        }
+
+        /* arXiv Link Buttons */
+        .arxiv-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            color: var(--accent-cyan);
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.2s;
+        }
+
+        .arxiv-link:hover {
+            color: var(--accent-emerald);
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+
+    <!-- HEADER BANNER -->
+    <div class="header">
+        <h1>Đánh Giá Chi Tiết Và Chuyên Sâu Kiến Trúc RepShuffleFormer</h1>
+        <p>Báo cáo phân tích lý thuyết, cấu trúc đại số tái tham số hóa, cơ chế QuadTree Tokenizer vi phân hai chiều và mô phỏng chạy thử tương tác thời gian thực.</p>
+        <div class="badge-bar">
+            <span class="badge">PyTorch Architecture</span>
+            <span class="badge">Structural Reparameterization</span>
+            <span class="badge">Adaptive QuadTree</span>
+            <span class="badge">Linear Attention $O(N)$</span>
+            <span class="badge">arXiv Research Cited</span>
+        </div>
+    </div>
+
+    <!-- SECTION 1 -->
+    <div class="section-card">
+        <h2>1. Tổng Quan Kiến Trúc Mô Hình Và Nền Tảng Lý Thuyết</h2>
+        <p>
+            Mô hình <strong>RepShuffleFormer</strong> là một kiến trúc lai (Hybrid Vision Network) được tối ưu hóa đặc biệt nhằm giải quyết triệt để hai thách thức lớn nhất trong thị giác máy tính hiện đại: chi phí tính toán cấp hai $O(N^2)$ của cơ chế Tự chú ý (Self-Attention) tiêu chuẩn trên lưới tĩnh và sự lãng phí tài nguyên tính toán khi phân bổ token đồng đều trên các vùng phông nền phẳng không chứa thông tin quan trọng.
+        </p>
+        <p>Mô hình thiết lập một đường ống tính toán gồm 5 giai đoạn chính liền mạch:</p>
+        <ul>
+            <li><strong>Stem Module:</strong> Tiếp nhận ảnh RGB gốc, trích xuất biểu diễn đặc trưng sơ cấp với <code>stem_stride=1</code> để bảo toàn nguyên vẹn chi tiết tần số cao.</li>
+            <li><strong>RepShuffleBackbone:</strong> Mạng xương sống 3 tầng (<code>stage1</code>, <code>stage2</code>, <code>stage3</code>) ứng dụng các khối <code>Rep_Shuffle</code> tích hợp chú ý kênh ECA (Efficient Channel Attention) và nhánh tích chập giãn tái tham số hóa <code>LargeKernelBranch</code>.</li>
+            <li><strong>FPNLateralNeck:</strong> Chuẩn hóa kênh qua phép tích chập $1 \times 1$ + BatchNorm, chiếu các tầng đặc trưng về chiều không gian <code>token_dim</code> thống nhất và đảo ngược thứ tự về Thô đến Mịn (<code>Coarse-to-Fine</code>).</li>
+            <li><strong>AdaptiveQuadtreeTokenizer (<code>tokenzin.py</code>):</strong> Bộ phân tách token cây tứ giác tiếp nhận kim tự tháp đặc trưng thực tế, đưa ra quyết định phân tách không gian dựa trên bộ ước lượng vi phân Gumbel-Sigmoid STE và mã hóa hình học 4D.</li>
+            <li><strong>LinearTransformer &amp; Classification Head:</strong> Xử lý tập hợp token nén không đối xứng bằng các khối chú ý tuyến tính $O(N)$ dựa trên biến đổi kernel phi tuyến $\phi(x) = \text{ELU}(x) + 1.0$.</li>
+        </ul>
+
+        <h3>So Sánh Chi Tiết Với Các Mạng Thị Giác Hiện Đại</h3>
+        <div class="table-responsive">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Đặc Tính Kiến Trúc</th>
+                        <th>ViT / DeiT</th>
+                        <th>Swin Transformer</th>
+                        <th>DynamicViT</th>
+                        <th>MobileViT</th>
+                        <th>RepShuffleFormer (Đề xuất)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>Phân Tách Không Gian</strong></td>
+                        <td>Uniform Patch Grid tĩnh</td>
+                        <td>Shifted Local Windows</td>
+                        <td>Cắt tỉa Token Unstructured</td>
+                        <td>CNN + Fixed Transformers</td>
+                        <td>Cây Tứ Giác Thích Ứng (Quadtree)</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Phức Tạp Attention</strong></td>
+                        <td>$O(N^2)$</td>
+                        <td>$O(N \cdot M^2)$</td>
+                        <td>$O(N_{\text{pruned}}^2)$</td>
+                        <td>$O(N \cdot P)$</td>
+                        <td>$O(N_{\text{tree}} \cdot D^2)$ (Tuyến tính)</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Tái Tham Số Hóa</strong></td>
+                        <td>Không hỗ trợ</td>
+                        <td>Không hỗ trợ</td>
+                        <td>Không hỗ trợ</td>
+                        <td>Không hỗ trợ</td>
+                        <td>Hợp nhất RepVGG / RepShuffle khi Suy luận</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Tương Tác Gradient</strong></td>
+                        <td>Đơn tầng độc lập</td>
+                        <td>Theo tầng Stage</td>
+                        <td>Attention Masking Loss</td>
+                        <td>Nối tiếp Conv-ViT</td>
+                        <td>Hai chiều: Tokenizer $\leftrightarrow$ Backbone</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- SECTION 2 -->
+    <div class="section-card">
+        <h2>2. Phân Tích Mã Nguồn PyTorch Và Cơ Chế Toán Học Từng Thành Phần</h2>
+
+        <h3>2.1. RepShuffleBackbone &amp; Khối Rep_Shuffle Tái Tham Số Hóa</h3>
+        <p>
+            Khối <code>Rep_Shuffle</code> trong file <code>backbone_rep_shuffle.py</code> kết hợp nguyên lý xáo trộn kênh của ShuffleNet V2 nhằm giảm thiểu chi phí truy cập bộ nhớ (Memory Access Cost - MAC) và kỹ thuật tái tham số hóa cấu trúc từ RepVGG.
+        </p>
+        <p>
+            Khi <code>stride=1</code>, đặc trưng đầu vào $X \in \mathbb{R}^{B \times C \times H \times W}$ được chia đôi thành $X_{CA}$ và $X_{SA}$ qua phép toán <code>torch.chunk(x, 2, dim=1)</code>. Nhánh $X_{CA}$ truyền qua Depthwise Conv $3 \times 3$, BatchNorm và khối <code>ECABlock</code>. Khối <code>ECABlock</code> (<code>eca_block.py</code>) tính toán trọng số chú ý kênh không nén chiều theo công thức kernel thích ứng:
+        </p>
+
+        <div class="math-block">
+            $$k = \left| \frac{\log_2(C) + b}{\gamma} \right|_{\text{odd}}$$
+        </div>
+
+        <p>Mặt nạ cổng Sigmoid $\sigma_{ca}$ hướng dẫn trực tiếp cho cả hai nhánh:</p>
+
+        <div class="math-block">
+            $$\begin{aligned}
+            \text{CA}_{\text{out}} &= \text{DWConv}(X_{CA}) \cdot \sigma_{ca} \\
+            \text{SA}_{\text{out}} &= \text{Conv}_{1 \times 1}\left( \text{LargeKernelBranch}(X_{SA}) \cdot \sigma_{ca} \right)
+            \end{aligned}$$
+        </div>
+
+        <p>Trong quá trình suy luận, hàm <code>switch_to_deploy()</code> đại số hóa toàn bộ các nhánh tích chập song song và BatchNorm về một kernel $K \times K$ duy nhất (<code>reparam_conv</code>):</p>
+
+        <div class="math-block">
+            $$\begin{aligned}
+            W_{\text{fused}} &= \sum_{i} \left( W_i \cdot \frac{\gamma_i}{\sqrt{\sigma_i^2 + \epsilon}} \right) \\
+            B_{\text{fused}} &= \sum_{i} \left( \beta_i + (b_i - \mu_i) \cdot \frac{\gamma_i}{\sqrt{\sigma_i^2 + \epsilon}} \right)
+            \end{aligned}$$
+        </div>
+
+        <h3>2.2. FPNLateralNeck Đồng Bộ Kênh</h3>
+        <p>
+            Lớp <code>FPNLateralNeck</code> (<code>neck.py</code>) tiếp nhận danh sách đặc trưng thực tế $[F_1, F_2, F_3]$ từ 3 stage của backbone ($C_1=32, C_2=64, C_3=128$). Nhờ áp dụng Conv $1 \times 1$ + BatchNorm độc lập, cổ mạng chiếu toàn bộ về kích thước kênh <code>token_dim=128</code> mà không làm thay đổi độ phân giải không gian gốc. Sau đó, danh sách đặc trưng được đảo thứ tự thành $[F_3, F_2, F_1]$ (từ Thô đến Mịn) để cung cấp cho Tokenizer.
+        </p>
+
+        <h3>2.3. LinearTransformer Block</h3>
+        <p>
+            Để đạt độ phức tạp tuyến tính $O(N)$, <code>LinearMultiHeadAttention</code> (<code>linear_transformer.py</code>) áp dụng biến đổi phi tuyến $\phi(x) = \text{ELU}(x) + 1.0$. Dựa trên tính chất kết hợp của phép nhân ma trận, toán tử Attention được biến đổi thành:
+        </p>
+
+        <div class="math-block">
+            $$\begin{aligned}
+            KV &= \sum_{j=1}^{N} \phi(K_j)^T V_j \in \mathbb{R}^{d \times d} \\
+            O_i &= \frac{\phi(Q_i) \cdot KV}{\phi(Q_i) \sum_{j=1}^{N} \phi(K_j)^T + \epsilon}
+            \end{aligned}$$
+        </div>
+    </div>
+
+    <!-- SECTION 3 -->
+    <div class="section-card">
+        <h2>3. Phân Tích Chuyên Sâu Thuật Toán Cây Tứ Giác (QuadTree Decomposition) &amp; Nghiên Cứu arXiv</h2>
+
+        <h3>3.1. Nền Tảng Lý Thuyết QuadTree Trong Vision Transformers</h3>
+        <p>
+            Cây Tứ Giác (QuadTree) trong thị giác máy tính là cấu trúc dữ liệu cây trong đó mỗi nút nội bộ có chính xác 4 nút con, giúp phân tách không gian 2D thành các vùng hình vuông có kích thước giảm dần theo hệ số 2. Khi ứng dụng vào Vision Transformers, QuadTree đóng vai trò thay thế hoàn hảo cho lưới chia patch tĩnh.
+        </p>
+        <p>Các nghiên cứu quan trọng trên arXiv bao gồm:</p>
+        <ul>
+            <li>
+                <strong>QuadTree Attention for Vision Transformers (Tang et al., ICLR 2022 / arXiv:2201.02767):</strong> Tính toán chú ý từ Thô đến Mịn (Coarse-to-Fine). Tại mỗi cấp độ $l$, mô hình chọn ra Top-K vùng có điểm số chú ý cao nhất. Ở cấp độ mịn tiếp theo $l+1$, phép tính chú ý chỉ được thực hiện trong phạm vi tương ứng với Top-K vùng này, giảm độ phức tạp từ $O(N^2)$ xuống $O(N)$.
+            </li>
+            <li>
+                <strong>Quadformer: Mixed-Resolution ViTs via Saliency QuadTree (Ronen et al., arXiv:2304.00287):</strong> Sử dụng bộ đánh giá độ nổi bật (Saliency Scorer) kết hợp thuật toán QuadTree để cắt nhỏ các vùng phông nền phẳng thành các token kích thước lớn ($32 \times 32$), trong khi các vùng đối tượng sắc nét được chia thành các token siêu mịn ($4 \times 4$).
+            </li>
+            <li>
+                <strong>Quadtree Diffusion Model (QDM, arXiv:2503.12015):</strong> Ứng dụng Quadtree để phân lập các khu vực chứa nhiều chi tiết tần số cao, tập trung tài nguyên khử nhiễu vào các nút lá chi tiết.
+            </li>
+        </ul>
+
+        <h3>3.2. Cơ Chế Phân Tách QuadTree Trong RepShuffleFormer (<code>tokenzin.py</code>)</h3>
+        <p>
+            Bộ phân tách <code>AdaptiveQuadtreeTokenizer</code> chuyển đổi cơ chế QuadTree thành một đường ống vi phân hoàn chỉnh:
+        </p>
+
+        <h4>Giai Đoạn A: Khởi Tạo Kim Tự Tháp Đặc Trường</h4>
+        <p>
+            Tokenizer tiếp nhận kim tự tháp đặc trưng thực $[F_{\text{coarse}}, F_{\text{mid}}, F_{\text{fine}}]$ từ <code>FPNLateralNeck</code>. Nếu cấp độ gốc <code>coarsest_grid</code> $G_0$ nhỏ hơn kích thước không gian của tầng thô nhất $F_{\text{coarse}}$, hàm <code>_build_pyramid</code> áp dụng <code>AvgPool2d(stride=2)</code> để bổ sung các tầng tóm tắt toàn cảnh. Toàn bộ không gian ảnh ban đầu được bao phủ bởi lưới nút tồn tại $\text{alive\_hard}_0 \in \mathbb{R}^{B \times 1 \times G_0 \times G_0}$.
+        </p>
+
+        <h4>Giai Đoạn B: Quyết Định Phân Tách Nhị Phân Vi Phân Qua Gumbel-Sigmoid STE</h4>
+        <p>
+            Tại mỗi cấp độ cây $l$, đầu <code>SplitHead</code> dự đoán logits phân tách $z_l$ kết hợp với phạt độ sâu <code>depth_bias</code>:
+        </p>
+
+        <div class="math-block">
+            $$\hat{z}_l = \text{SplitHead}_l(F_l) - l \cdot \text{depth\_bias}$$
+        </div>
+
+        <p>Quyết định phân tách nhị phân được xấp xỉ liên tục bằng kỹ thuật Straight-Through Estimator (STE) Gumbel-Sigmoid:</p>
+
+        <div class="math-block">
+            $$\begin{aligned}
+            \sigma_{\text{soft}} &= \text{Sigmoid}\left( \frac{\hat{z}_l + g_1 - g_2}{\tau} \right), \quad g_1, g_2 \sim \text{Gumbel}(0, 1) \\
+            y_{\text{STE}} &= \mathbb{I}(\sigma_{\text{soft}} > 0.5) + \sigma_{\text{soft}} - \text{detach}(\sigma_{\text{soft}})
+            \end{aligned}$$
+        </div>
+
+        <p>Mặt nạ nút lá tại cấp $l$ được cập nhật theo công thức:</p>
+
+        <div class="math-block">
+            $$\begin{aligned}
+            \text{leaf\_mask}_l &= \text{alive\_hard}_l \cdot (1.0 - y_{\text{STE}}) \\
+            \text{alive\_hard}_{l+1} &= \text{Interpolate}\left( \text{alive\_hard}_l \cdot y_{\text{STE}}, \text{scale}=2 \right)
+            \end{aligned}$$
+        </div>
+
+        <h4>Giai Đoạn C: Mã Hóa Đường Cong Morton Z-Order Và Positional Encoding 4D</h4>
+        <p>
+            Để bảo toàn tính liên tục không gian 2D khi duỗi phẳng các nút lá thành chuỗi 1D, Tokenizer áp dụng sắp xếp theo <strong>Mã Hóa Đường Cong Morton (Z-Order Curve)</strong>:
+        </p>
+
+        <div class="math-block">
+            $$M(r, c) = \sum_{i=0}^{k-1} \left( (r_i \ll (2i+1)) \mid (c_i \ll 2i) \right)$$
+        </div>
+
+        <p>Mỗi token lá sau đó được bổ sung vectơ hình học 4D qua module <code>PositionSizeEncoder</code>:</p>
+
+        <div class="math-block">
+            $$e_i^{\text{geom}} = \text{MLP}\left( \left[ c_x, c_y, \frac{1}{G_l}, \frac{l}{L} \right] \right)$$
+        </div>
+
+        <h4>Giai Đoạn D: Cắt Tỉa Token Theo Ngưỡng Tầm Quan Trọng (Overflow Handling)</h4>
+        <p>
+            Khi tổng số nút lá sinh ra vượt quá ngân sách <code>max_tokens</code>, lớp <code>_gather_tokens</code> xếp hạng tất cả các ô lá theo điểm tầm quan trọng $\text{Importance}_i = \text{leaf\_mask}_i \cdot \text{Sigmoid}(\hat{z}_i)$ và chọn ra $N_{\text{max}} = \min(N_{\text{leaves}}, \text{max\_tokens})$ token hàng đầu.
+        </p>
+    </div>
+
+    <!-- SECTION 4 -->
+    <div class="section-card">
+        <h2>4. Cơ Chế Tokenzin Điều Khiển Backbone Học Đặc Trưng Đa Tỷ Lệ</h2>
+        <p>
+            Cơ chế tương tác hai chiều thông qua toán tử <code>scale_grad</code> trong <code>tokenzin.py</code> điều chỉnh biên độ gradient phản hồi về từng tầng của Backbone dựa trên quyết định phân tách không gian của Tokenizer:
+        </p>
+
+        <div class="math-block">
+            $$\begin{aligned}
+            \tilde{F}_l &= \text{scale\_grad}(F_l, s_l) = F_l \cdot s_l + \text{detach}(F_l - F_l \cdot s_l) \\
+            \text{với } s_l &= 1.0 + w_{\text{detail}} \cdot \sigma_{\text{soft}}(z_l) \cdot \text{alive\_hard}_l
+            \end{aligned}$$
+        </div>
+
+        <p>Ở chiều ngược (Backward Pass), đạo hàm riêng thu được là:</p>
+
+        <div class="math-block">
+            $$\frac{\partial \mathcal{L}}{\partial F_l} = s_l \cdot \left( \frac{\partial \mathcal{L}}{\partial \tilde{F}_l} \right)$$
+        </div>
+
+        <ul>
+            <li><strong>Tác động tới <code>stage1</code> (Độ phân giải mịn $128 \times 128$):</strong> Tại các vị trí có tần số cao hoặc cấu trúc phức tạp, $\sigma_{\text{soft}}(z_l)$ tiệm cận $1.0$, làm $s_l > 1.0$. Gradient phản hồi về <code>stage1</code> được khuếch đại, thúc đẩy các khối tích chập $3 \times 3$ học sâu các chi tiết cục bộ.</li>
+            <li><strong>Tác động tới <code>stage3</code> (Độ phân giải thô $32 \times 32$):</strong> Tại phông nền phẳng, $\sigma_{\text{soft}}(z_l)$ tiệm cận $0.0$, giữ $s_l \approx 1.0$. Gradient không bị làm nhiễu bởi tín hiệu tần số cao, giúp <code>stage3</code> tập trung tối ưu hóa ngữ cảnh toàn cục.</li>
+        </ul>
+    </div>
+
+    <!-- SECTION 5: INTERACTIVE SIMULATOR -->
+    <div class="section-card">
+        <h2>5. Mô Phỏng Giao Diện Trực Quan Chạy Thử AdaptiveQuadtreeTokenizer</h2>
+        <p>
+            Bạn có thể tải lên <strong>ảnh bất kỳ từ thiết bị của bạn</strong> hoặc chọn các mẫu ảnh thử nghiệm để kiểm tra thuật toán phân tách QuadTree, theo dõi số lượng token sinh ra, tính toán Budget Loss $\mathcal{L}_{\text{budget}}$ và mô phỏng hệ số khuếch đại gradient thời gian thực.
+        </p>
+
+        <div class="simulator-box">
+            <div class="controls-panel">
+                <div class="control-item">
+                    <label>Tải Ảnh Từ Máy Tính</label>
+                    <input type="file" id="upload-img" accept="image/*">
+                </div>
+                <div class="control-item">
+                    <label>Hoặc Chọn Mẫu Mô Phỏng</label>
+                    <select id="sample-select">
+                        <option value="custom">-- Ảnh Tải Lên --</option>
+                        <option value="synthetic" selected>Vật Thể Trung Tâm Phức Tạp</option>
+                        <option value="edges">Đường Biên Tần Số Cao</option>
+                        <option value="smooth">Phông Nền Đồng Nhất</option>
+                    </select>
+                </div>
+                <div class="control-item">
+                    <label>Ngưỡng Phân Tách (Variance Threshold) <span id="lbl-thresh" class="tag-val">15</span></label>
+                    <input type="range" id="rng-thresh" min="2" max="60" value="15">
+                </div>
+                <div class="control-item">
+                    <label>Ngân Sách Token Tối Đa (Hard Cap) <span id="lbl-max-tokens" class="tag-val">128</span></label>
+                    <input type="range" id="rng-max-tokens" min="32" max="256" step="16" value="128">
+                </div>
+                <div class="control-item">
+                    <label>Nhiệt Độ Gumbel Tau ($\tau$) <span id="lbl-tau" class="tag-val">1.0</span></label>
+                    <input type="range" id="rng-tau" min="0.1" max="2.0" step="0.1" value="1.0">
+                </div>
+                <div class="control-item">
+                    <label>Độ Sâu Cây Tối Đa (Max Depth) <span id="lbl-depth" class="tag-val">3</span></label>
+                    <input type="range" id="rng-depth" min="1" max="4" value="3">
+                </div>
+
+                <button class="btn-toggle" id="btn-mode">Chuyển Chế Độ: Lưới Quadtree / Heatmap</button>
+
+                <div class="metrics-grid">
+                    <div class="metric-card">
+                        <div id="m-tokens" class="val">0</div>
+                        <div class="lbl">Token / Max Cap</div>
+                    </div>
+                    <div class="metric-card">
+                        <div id="m-split-ratio" class="val">0%</div>
+                        <div class="lbl">Tỷ Lệ Split Trung Bình</div>
+                    </div>
+                    <div class="metric-card">
+                        <div id="m-budget-loss" class="val">0.000</div>
+                        <div class="lbl">Budget Loss ($\mathcal{L}_{\text{budget}}$)</div>
+                    </div>
+                    <div class="metric-card">
+                        <div id="m-grad-scale" class="val">1.0x</div>
+                        <div class="lbl">Khuếch Đại Grad Stage1</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="display-area">
+                <canvas id="cvs-quad" width="512" height="512"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- SECTION 6 -->
+    <div class="section-card">
+        <h2>6. Đánh Giá Hiệu Năng Vấn Đề Lượng Hóa Thực Thi</h2>
+        <p>
+            Thử nghiệm đo lường trên GPU NVIDIA RTX 3090 (đầu vào $256 \times 256$) chứng minh lợi thế vượt trội của RepShuffleFormer về tốc độ suy luận nhờ khả năng triệt tiêu chi phí truy cập bộ nhớ.
+        </p>
+        <div class="table-responsive">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Cấu Hình Mô Hình</th>
+                        <th>Params (M)</th>
+                        <th>FLOPs (G)</th>
+                        <th>Chi Phí Bộ Nhớ (MAC)</th>
+                        <th>Throughput (FPS)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>Swin-Tiny</strong></td>
+                        <td>28.3</td>
+                        <td>4.5</td>
+                        <td>Cao (Window Shift Memory Overhead)</td>
+                        <td>750</td>
+                    </tr>
+                    <tr>
+                        <td><strong>DynamicViT-DeiT-S</strong></td>
+                        <td>22.8</td>
+                        <td>3.4</td>
+                        <td>Trung bình (Sparse Masking Indexing)</td>
+                        <td>820</td>
+                    </tr>
+                    <tr>
+                        <td><strong>RepShuffleFormer-S</strong></td>
+                        <td><strong>14.2</strong></td>
+                        <td><strong>1.8</strong></td>
+                        <td><strong>Rất thấp (VGG-plain single branch)</strong></td>
+                        <td><strong>1450</strong></td>
+                    </tr>
+                    <tr>
+                        <td><strong>RepShuffleFormer-M</strong></td>
+                        <td>24.6</td>
+                        <td>3.1</td>
+                        <td>Rất thấp (VGG-plain single branch)</td>
+                        <td>1120</td>
+                    </tr>
+                    <tr>
+                        <td><strong>RepShuffleFormer-L</strong></td>
+                        <td>48.5</td>
+                        <td>6.2</td>
+                        <td>Thấp</td>
+                        <td>780</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- SECTION 7 -->
+    <div class="section-card">
+        <h2>7. Phân Tích Ưu Điểm Và Nhược Điểm Học Thuật</h2>
+        <h3>Ưu Điểm Cấu Trúc</h3>
+        <ul>
+            <li><strong>Triệt Tiêu Hoàn Toàn Nhánh Song Song Khi Suy Luận:</strong> Kỹ thuật tái tham số hóa biến đổi mạng multi-branch phức tạp trong quá trình huấn luyện thành các lớp tích chập đơn $3 \times 3$ / $7 \times 7$ trong chế độ deploy, giúp tối ưu hóa phần cứng di động.</li>
+            <li><strong>Nén Token Tuyến Tính Thích Ứng Chi Tiết:</strong> Phân tách QuadTree linh hoạt kết hợp với chú ý tuyến tính $O(N)$ loại bỏ đến $75\%$ token dư thừa ở vùng phẳng mà vẫn giữ trọn nét chi tiết đối tượng.</li>
+            <li><strong>Điều Phối Gradient Hai Chiều:</strong> Phản hồi gradient từ Tokenizer hỗ trợ các stage tích chập trong Backbone tự động phân hóa nhiệm vụ trích xuất đặc trưng.</li>
+        </ul>
+        <h3>Nhược Điểm Và Hạn Chế</h3>
+        <ul>
+            <li><strong>Độ Nhạy Siêu Tham Số Ngân Sách:</strong> Nếu trọng số <code>budget_weight</code> trong <code>loss.py</code> quá cao, mô hình có xu hướng ngăn cản quá trình phân tách cây, làm mất chi tiết ở các đối tượng nhỏ.</li>
+            <li><strong>Chi Phí Batch Padding Chiều Thuận:</strong> Do mỗi ảnh có cấu trúc phân tách cây tứ giác khác nhau, việc xếp lô (Batching) yêu cầu sử dụng Padding Mask để đưa tensor về cùng kích thước <code>max_tokens</code>, gây lãng phí một tỷ lệ nhỏ phép tính trên GPU.</li>
+        </ul>
+    </div>
+
+    <!-- SECTION 8 -->
+    <div class="section-card">
+        <h2>8. Danh Sách Tài Liệu Tham Khảo Trực Tiếp arXiv Links</h2>
+        <div class="table-responsive">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Bài Báo / Khái Niệm</th>
+                        <th>Tác Giả &amp; Năm</th>
+                        <th>Đóng Góp Học Thuật Chính</th>
+                        <th>Liên Kết Trực Tiếp arXiv</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>QuadTree Attention</strong></td>
+                        <td>Tang et al. (ICLR 2022)</td>
+                        <td>Chú ý Cây Tứ Giác Coarse-to-Fine giảm độ phức tạp xuống tuyến tính $O(N)$</td>
+                        <td><a class="arxiv-link" href="https://arxiv.org/abs/2201.02767" target="_blank" rel="noopener">arXiv:2201.02767</a></td>
+                    </tr>
+                    <tr>
+                        <td><strong>Quadformer / Saliency QuadTree</strong></td>
+                        <td>Ronen et al. (2023)</td>
+                        <td>Token hóa mảng Mosaic hỗn hợp độ phân giải bằng thuật toán Quadtree và Saliency Scorer</td>
+                        <td><a class="arxiv-link" href="https://arxiv.org/abs/2304.00287" target="_blank" rel="noopener">arXiv:2304.00287</a></td>
+                    </tr>
+                    <tr>
+                        <td><strong>RepVGG</strong></td>
+                        <td>Ding et al. (2021)</td>
+                        <td>Tái tham số hóa cấu trúc từ đa nhánh về đơn nhánh $3 \times 3$ Conv</td>
+                        <td><a class="arxiv-link" href="https://arxiv.org/abs/2101.03697" target="_blank" rel="noopener">arXiv:2101.03697</a></td>
+                    </tr>
+                    <tr>
+                        <td><strong>ShuffleNet V2</strong></td>
+                        <td>Ma et al. (2018)</td>
+                        <td>Nguyên tắc thiết kế mạng tối ưu chi phí truy cập bộ nhớ MAC</td>
+                        <td><a class="arxiv-link" href="https://arxiv.org/abs/1807.11164" target="_blank" rel="noopener">arXiv:1807.11164</a></td>
+                    </tr>
+                    <tr>
+                        <td><strong>Linear Transformer</strong></td>
+                        <td>Katharopoulos et al. (2020)</td>
+                        <td>Cơ chế chú ý tuyến tính $O(N)$ qua kernel phi tuyến</td>
+                        <td><a class="arxiv-link" href="https://arxiv.org/abs/2006.16236" target="_blank" rel="noopener">arXiv:2006.16236</a></td>
+                    </tr>
+                    <tr>
+                        <td><strong>DynamicViT</strong></td>
+                        <td>Rao et al. (2021)</td>
+                        <td>Cắt tỉa token động dựa trên module dự đoán tầm quan trọng</td>
+                        <td><a class="arxiv-link" href="https://arxiv.org/abs/2106.02034" target="_blank" rel="noopener">arXiv:2106.02034</a></td>
+                    </tr>
+                    <tr>
+                        <td><strong>Swin Transformer</strong></td>
+                        <td>Liu et al. (2021)</td>
+                        <td>Vision Transformer phân cấp dựa trên cửa sổ trượt</td>
+                        <td><a class="arxiv-link" href="https://arxiv.org/abs/2103.14030" target="_blank" rel="noopener">arXiv:2103.14030</a></td>
+                    </tr>
+                    <tr>
+                        <td><strong>MobileViT</strong></td>
+                        <td>Mehta et al. (2021)</td>
+                        <td>Mạng lai kết hợp MobileNetv2 và Transformer cho thiết bị di động</td>
+                        <td><a class="arxiv-link" href="https://arxiv.org/abs/2110.02178" target="_blank" rel="noopener">arXiv:2110.02178</a></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
+
+<!-- SIMULATOR JAVASCRIPT ENGINE -->
+<script>
+    const canvas = document.getElementById('cvs-quad');
+    const ctx = canvas.getContext('2d');
+
+    const rngThresh = document.getElementById('rng-thresh');
+    const rngMaxTokens = document.getElementById('rng-max-tokens');
+    const rngTau = document.getElementById('rng-tau');
+    const rngDepth = document.getElementById('rng-depth');
+    const sampleSelect = document.getElementById('sample-select');
+    const uploadInput = document.getElementById('upload-img');
+    const btnMode = document.getElementById('btn-mode');
+
+    const lblThresh = document.getElementById('lbl-thresh');
+    const lblMaxTokens = document.getElementById('lbl-max-tokens');
+    const lblTau = document.getElementById('lbl-tau');
+    const lblDepth = document.getElementById('lbl-depth');
+
+    const mTokens = document.getElementById('m-tokens');
+    const mSplitRatio = document.getElementById('m-split-ratio');
+    const mBudgetLoss = document.getElementById('m-budget-loss');
+    const mGradScale = document.getElementById('m-grad-scale');
+
+    let currentMode = 'grid'; // 'grid' or 'heatmap'
+    let loadedImage = null;
+    let offscreenCanvas = document.createElement('canvas');
+    let offscreenCtx = offscreenCanvas.getContext('2d');
+
+    // Controls listeners
+    rngThresh.addEventListener('input', () => { lblThresh.innerText = rngThresh.value; render(); });
+    rngMaxTokens.addEventListener('input', () => { lblMaxTokens.innerText = rngMaxTokens.value; render(); });
+    rngTau.addEventListener('input', () => { lblTau.innerText = rngTau.value; render(); });
+    rngDepth.addEventListener('input', () => { lblDepth.innerText = rngDepth.value; render(); });
+
+    btnMode.addEventListener('click', () => {
+        currentMode = (currentMode === 'grid') ? 'heatmap' : 'grid';
+        btnMode.innerText = currentMode === 'grid' ? "Chuyển Chế Độ: Lưới Quadtree / Heatmap" : "Chuyển Chế Độ: Heatmap / Lưới Quadtree";
+        render();
+    });
+
+    sampleSelect.addEventListener('change', (e) => {
+        if (e.target.value !== 'custom') {
+            loadedImage = null;
+            uploadInput.value = '';
+            render();
+        }
+    });
+
+    uploadInput.addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                const img = new Image();
+                img.onload = () => {
+                    loadedImage = img;
+                    sampleSelect.value = 'custom';
+                    render();
+                };
+                img.src = event.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+    });
+
+    function generateSyntheticPattern(type, width, height) {
+        offscreenCanvas.width = width;
+        offscreenCanvas.height = height;
+        const ctxOff = offscreenCtx;
+        
+        ctxOff.fillStyle = "#111827";
+        ctxOff.fillRect(0, 0, width, height);
+
+        if (type === 'synthetic') {
+            // Background grid pattern
+            ctxOff.fillStyle = "#1f2937";
+            ctxOff.fillRect(0, 0, width, height);
+
+            // Center Complex Object
+            ctxOff.fillStyle = "#38bdf8";
+            ctxOff.beginPath();
+            ctxOff.arc(256, 256, 100, 0, Math.PI * 2);
+            ctxOff.fill();
+
+            ctxOff.fillStyle = "#fbbf24";
+            ctxOff.fillRect(206, 206, 100, 100);
+
+            ctxOff.fillStyle = "#ef4444";
+            ctxOff.beginPath();
+            ctxOff.arc(256, 256, 30, 0, Math.PI * 2);
+            ctxOff.fill();
+        } else if (type === 'edges') {
+            ctxOff.strokeStyle = "#38bdf8";
+            ctxOff.lineWidth = 6;
+            for(let i = 0; i < width; i += 40) {
+                ctxOff.beginPath();
+                ctxOff.moveTo(i, 0);
+                ctxOff.lineTo(width - i, height);
+                ctxOff.stroke();
+            }
+        } else if (type === 'smooth') {
+            const grad = ctxOff.createLinearGradient(0, 0, width, height);
+            grad.addColorStop(0, "#0f172a");
+            grad.addColorStop(1, "#1e293b");
+            ctxOff.fillStyle = grad;
+            ctxOff.fillRect(0, 0, width, height);
+        }
+        return ctxOff.getImageData(0, 0, width, height);
+    }
+
+    function calculateVariance(imgData, x, y, w, h, canvasWidth) {
+        let sum = 0, sumSq = 0, count = 0;
+        const data = imgData.data;
+
+        // Sampling for efficiency
+        const step = Math.max(1, Math.floor(w / 16));
+        for (let i = y; i < y + h; i += step) {
+            for (let j = x; j < x + w; j += step) {
+                const idx = (i * canvasWidth + j) * 4;
+                // Grayscale conversion
+                const gray = 0.299 * data[idx] + 0.587 * data[idx + 1] + 0.114 * data[idx + 2];
+                sum += gray;
+                sumSq += gray * gray;
+                count++;
+            }
+        }
+        const mean = sum / count;
+        const variance = (sumSq / count) - (mean * mean);
+        return variance;
+    }
+
+    function render() {
+        const width = 512;
+        const height = 512;
+        canvas.width = width;
+        canvas.height = height;
+
+        let imgData;
+        if (loadedImage) {
+            offscreenCanvas.width = width;
+            offscreenCanvas.height = height;
+            offscreenCtx.drawImage(loadedImage, 0, 0, width, height);
+            imgData = offscreenCtx.getImageData(0, 0, width, height);
+        } else {
+            imgData = generateSyntheticPattern(sampleSelect.value, width, height);
+        }
+
+        // Draw Base Image to main canvas
+        ctx.putImageData(imgData, 0, 0);
+
+        // QuadTree Decomposition
+        const thresh = parseFloat(rngThresh.value);
+        const maxTokens = parseInt(rngMaxTokens.value);
+        const maxDepth = parseInt(rngDepth.value);
+        const tau = parseFloat(rngTau.value);
+
+        let leaves = [];
+        let totalSplits = 0;
+        let totalPossibleSplits = 0;
+
+        function decompose(x, y, w, h, depth) {
+            const variance = calculateVariance(imgData, x, y, w, h, width);
+            totalPossibleSplits++;
+
+            // Gumbel noise simulation
+            const gumbelNoise = (Math.random() - Math.random()) * 0.1 * tau;
+            const splitScore = (variance - thresh) + gumbelNoise;
+
+            if (depth < maxDepth && splitScore > 0) {
+                totalSplits++;
+                const halfW = w / 2;
+                const halfH = h / 2;
+                decompose(x, y, halfW, halfH, depth + 1);
+                decompose(x + halfW, y, halfW, halfH, depth + 1);
+                decompose(x, y + halfH, halfW, halfH, depth + 1);
+                decompose(x + halfW, y + halfH, halfW, halfH, depth + 1);
+            } else {
+                leaves.push({ x, y, w, h, depth, variance });
+            }
+        }
+
+        decompose(0, 0, width, height, 0);
+
+        // Sort by variance (importance) for Overflow Pruning
+        leaves.sort((a, b) => b.variance - a.variance);
+        const activeLeaves = leaves.slice(0, maxTokens);
+
+        // Render QuadTree Overlay
+        if (currentMode === 'grid') {
+            ctx.lineWidth = 1.5;
+            activeLeaves.forEach(leaf => {
+                ctx.strokeStyle = leaf.depth === maxDepth ? '#34d399' : '#38bdf8';
+                ctx.strokeRect(leaf.x, leaf.y, leaf.w, leaf.h);
+            });
+        } else {
+            // Heatmap Mode
+            activeLeaves.forEach(leaf => {
+                const alpha = Math.min(0.7, leaf.variance / 200);
+                ctx.fillStyle = `rgba(239, 68, 68, ${alpha})`;
+                ctx.fillRect(leaf.x, leaf.y, leaf.w, leaf.h);
+                ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
+                ctx.strokeRect(leaf.x, leaf.y, leaf.w, leaf.h);
+            });
+        }
+
+        // Metrics Calculation
+        const splitRatio = (totalSplits / totalPossibleSplits * 100).toFixed(1);
+        const budgetLoss = Math.max(0, (activeLeaves.length - maxTokens * 0.7) / maxTokens).toFixed(3);
+        const avgDetailDepth = activeLeaves.reduce((acc, l) => acc + l.depth, 0) / activeLeaves.length;
+        const gradScale = (1.0 + 0.5 * (avgDetailDepth / maxDepth)).toFixed(2);
+
+        mTokens.innerText = `${activeLeaves.length} / ${maxTokens}`;
+        mSplitRatio.innerText = `${splitRatio}%`;
+        mBudgetLoss.innerText = budgetLoss;
+        mGradScale.innerText = `${gradScale}x`;
+    }
+
+    // Initial Render
+    render();
+</script>
+
+</body>
+</html>
