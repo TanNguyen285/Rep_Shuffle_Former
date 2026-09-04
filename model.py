@@ -1,125 +1,67 @@
 from __future__ import annotations
+from typing import List, Optional, Sequence, Union
+
 import torch
 import torch.nn as nn
 
-from backbone_rep_shuffle import RepShuffleBackbone
-from neck import FPNLateralNeck
-from linear_transformer import LinearTransformer
+from Backbone.RepShuffle import RepShuffleBackbone
+from Head import Classification  # head.py: định nghĩa riêng (GAP + Dropout + Linear)
 
 
-class RepShuffleFormer(nn.Module):
-    """
-    VERSION DEBUG:
-    - BỎ tokenizer (quadtree)
-    - Dùng feature p2 (28x28) -> flatten -> transformer
-    - Mục tiêu: kiểm tra backbone + neck + transformer có học được không
-    """
+class Model(nn.Module):
+  
 
     def __init__(
         self,
+        scale: str = "S",
         in_channels: int = 3,
-        num_classes: int = 22,
-        img_size: int = 224,
-
-        # Backbone
-        stem_channels: int = 16,
+        num_classes: Optional[int] = None,
         stem_stride: int = 2,
-        stage_repeats=(2, 2, 2),
-        K: int = 3,
-
-        # Transformer
-        token_dim: int = 128,
-        depth: int = 4,
-        num_heads: int = 4,
-        mlp_ratio: float = 4.0,
-        dropout: float = 0.1,
+        dropout: float = 0.2,
+        **backbone_overrides,
     ):
         super().__init__()
 
-        # =====================
-        # 1. Backbone
-        # =====================
-        self.backbone = RepShuffleBackbone(
+        self.backbone = RepShuffleBackbone.from_scale(
+            scale=scale,
             in_channels=in_channels,
-            stem_channels=stem_channels,
             stem_stride=stem_stride,
-            use_stem=True,
-            stage_repeats_s1=stage_repeats,
-            K=K,
-        )
-        c1, c2, c3 = self.backbone.out_channels_list
-
-        # =====================
-        # 2. Neck (FPN)
-        # =====================
-        self.neck = FPNLateralNeck(
-            in_channels_list=[c1, c2, c3],
-            out_channels=token_dim
+            **backbone_overrides,
         )
 
-        # =====================
-        # 3. Transformer
-        # =====================
-        self.transformer = LinearTransformer(
-            dim=token_dim,
-            depth=depth,
-            num_heads=num_heads,
-            mlp_ratio=mlp_ratio,
-            dropout=dropout,
+        self.num_classes = num_classes
+        self.head = (
+            Classification(
+                in_channels=self.backbone.out_channels,
+                num_classes=num_classes,
+                dropout=dropout,
+            )
+            if num_classes is not None
+            else None
         )
 
-        # =====================
-        # 4. Head
-        # =====================
-        self.head = nn.Linear(token_dim, num_classes)
+    def forward(self, x: torch.Tensor) -> Union[torch.Tensor, List[torch.Tensor]]:
+        feats = self.backbone(x)  # [f1, f2, f3]
+        if self.head is None:
+            return feats
+        return self.head(feats[-1])
 
-    def forward(self, x: torch.Tensor):
-        # ===== Backbone =====
-        feats = self.backbone(x)
+    def switch_to_deploy(self) -> None:
+        """Re-parameterize toàn bộ backbone (Conv+BN fuse) để deploy."""
+        self.backbone.switch_to_deploy()
 
-        # ===== Neck =====
-        feat_pyramid = self.neck(feats)
-        p2, p1 = feat_pyramid   # p2=28x28, p1=56x56
-
-        # ===== CHỈ DÙNG p2 (ổn định) =====
-        x = p2   # [B, C, 28, 28]
-
-        B, C, H, W = x.shape
-
-        # flatten -> tokens
-        tokens = x.flatten(2).transpose(1, 2)   # [B, N=784, C]
-
-        # mask full
-        mask = torch.ones(B, tokens.shape[1], device=x.device)
-
-        # ===== Transformer =====
-        tokens = self.transformer(tokens, mask)
-
-        # ===== Global pooling =====
-        feat = tokens.mean(dim=1)
-
-        logits = self.head(feat)
-
-        return logits, {}   # aux empty
+    @classmethod
+    def from_scale(cls, scale: str, **kwargs) -> "Model":
+        return cls(scale=scale, **kwargs)
 
 
-# =========================
-# Builder
-# =========================
-def build_model(cfg):
-    return RepShuffleFormer(
-        in_channels=cfg.in_channels,
-        num_classes=cfg.num_classes,
-        img_size=cfg.img_size,
+if __name__ == "__main__":
+    # Quick sanity check
+    model = Model(scale="S", num_classes=10)
+    x = torch.randn(2, 3, 224, 224)
+    out = model(x)
+    print("logits:", out.shape)
 
-        stem_channels=cfg.backbone_stem_channels,
-        stem_stride=getattr(cfg, "backbone_stem_stride", 1),
-        stage_repeats=cfg.backbone_stage_repeats_s1,
-        K=cfg.K,
-
-        token_dim=cfg.token_dim,
-        depth=cfg.mixer_depth,
-        num_heads=cfg.transformer_heads,
-        mlp_ratio=cfg.transformer_mlp_ratio,
-        dropout=cfg.mixer_dropout,
-    )
+    feat_model = Model(scale="S", num_classes=None)
+    feats = feat_model(x)
+    print("multi-scale feats:", [f.shape for f in feats])

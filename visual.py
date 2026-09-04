@@ -39,10 +39,12 @@ def plot_and_save_confusion_matrix(model, loader, device, num_classes, class_nam
     for x, y in loader:
         x = x.to(device, non_blocking=True)
         with torch.amp.autocast("cuda", enabled=False):
-            logits, _ = model(x.float())
+            logits = model(x.float())
             preds = logits.argmax(dim=1).cpu().numpy()
         all_preds.extend(preds)
-        all_targets.extend(y.numpy() if isinstance(y, torch.Tensor) else y)
+        all_targets.extend(
+    y.cpu().numpy() if isinstance(y, torch.Tensor) else y
+)
 
     cm = confusion_matrix(all_targets, all_preds, labels=list(range(num_classes)))
     cm_norm = cm.astype("float") / (cm.sum(axis=1, keepdims=True) + 1e-6)

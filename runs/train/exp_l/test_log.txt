@@ -1,0 +1,8 @@
+Model Architecture: RepShuffleFormer
+Scale Model: L
+Batch Size: 32
+Best Val Accuracy: 0.9076
+Best Val Loss: 0.6436
+Test Accuracy: 0.9061
+Test Loss: 0.6621
+----------------------------------------
