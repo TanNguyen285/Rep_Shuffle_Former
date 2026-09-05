@@ -12,7 +12,8 @@ import torch.nn as nn
 from tqdm import tqdm
 
 from dataset import get_dataloaders, set_seed
-from model import Model
+from loss.cls_loss import build_classification_loss
+from model_cls import Classification_Head as Model
 from visual import plot_and_save_confusion_matrix, plot_training_metrics
 
 
@@ -119,7 +120,7 @@ class Trainer:
         self.weights_dir = os.path.join(save_dir, "weights")
         os.makedirs(self.weights_dir, exist_ok=True)
 
-        self.criterion = nn.CrossEntropyLoss(label_smoothing=args.label_smoothing)
+        self.criterion = build_classification_loss(args.label_smoothing)
         self.optimizer = build_optimizer_with_decay(self.model, lr=args.lr, weight_decay=args.weight_decay)
         self.warmup_epochs = max(0, args.warmup_epochs)
 

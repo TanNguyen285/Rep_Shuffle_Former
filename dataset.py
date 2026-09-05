@@ -85,12 +85,39 @@ def _detect_structure(root: Path) -> str:
     if not group_dirs:
         raise RuntimeError(f"Không có group folder nào trong: {root}")
 
+    root_split_names = {d.name.lower() for d in group_dirs}
+    if root_split_names & {"train", "training"} and root_split_names & {"val", "valid", "validation", "test"}:
+        return "root_split"
+
     first_sub = next((d for d in group_dirs[0].iterdir() if d.is_dir()), None)
     if first_sub is None:
         raise RuntimeError(f"Group '{group_dirs[0].name}' không có subfolder nào.")
 
     has_deeper = any(d.is_dir() for d in first_sub.iterdir())
     return "split" if has_deeper else "flat"
+
+
+def _find_root_split(root: Path, names: Tuple[str, ...], required: bool = True) -> Optional[Path]:
+    for directory in sorted(d for d in root.iterdir() if d.is_dir()):
+        if directory.name.lower() in names:
+            return directory
+    if required:
+        raise RuntimeError(f"Không tìm thấy split {names} trong: {root}")
+    return None
+
+
+def _scan_root_split(root: Path, split_dir: Path) -> Tuple[List[Tuple[str, str]], List[str]]:
+    raw: List[Tuple[str, str]] = []
+    class_names: set = set()
+    for class_dir in sorted(d for d in split_dir.iterdir() if d.is_dir()):
+        class_name = _normalize_class_name(class_dir.name)
+        class_names.add(class_name)
+        for file_path in class_dir.rglob("*"):
+            if file_path.is_file() and file_path.suffix in IMAGE_EXTS:
+                raw.append((str(file_path), class_name))
+    if not raw:
+        raise RuntimeError(f"Không có ảnh trong split '{split_dir.name}' tại: {split_dir}")
+    return raw, sorted(class_names)
 
 
 def _find_split_folder(root: Path, prefer: str) -> str:
@@ -291,7 +318,20 @@ def get_dataloaders(
     img_size = int(getattr(cfg, "img_size", 224))
 
     struct = _detect_structure(dcfg.root)
-    if struct == "flat":
+    if struct == "root_split":
+        train_dir = _find_root_split(dcfg.root, ("train", "training"))
+        val_dir = _find_root_split(dcfg.root, ("val", "valid", "validation"), required=False)
+        test_dir = _find_root_split(dcfg.root, ("test", "testing"), required=False)
+        train_raw, train_cls = _scan_root_split(dcfg.root, train_dir)
+        val_raw, val_cls = _scan_root_split(dcfg.root, val_dir) if val_dir else ([], [])
+        test_raw, test_cls = _scan_root_split(dcfg.root, test_dir) if test_dir else ([], [])
+        class_names = dcfg.names or sorted(set(train_cls) | set(val_cls) | set(test_cls))
+        cls_to_idx = {c: i for i, c in enumerate(class_names)}
+        train_s = _to_indexed(train_raw, cls_to_idx)
+        val_s = _to_indexed(val_raw, cls_to_idx)
+        test_s = _to_indexed(test_raw, cls_to_idx)
+        strategy = "root train/val/test split — dùng split có sẵn"
+    elif struct == "flat":
         strategy = f"CCMT flat (group/class) — Tách 70% Train / 10% Val / 20% Test từ toàn bộ dữ liệu"
         all_raw, all_cls = _scan_flat_ccmt(dcfg.root)
         class_names = dcfg.names or all_cls

@@ -13,9 +13,9 @@
 #
 # Tên class cuối cùng = "<group>_<class>" (vd "Cashew_healthy").
 
-path: C:/Users/ThisPC/Desktop/Raw Data/CCMT Dataset
+path: D:\chest_xray
 
 # Tuỳ chọn — để trống nếu không chắc, code sẽ tự quét và báo số class thật
 # ra console (báo warning nếu nc ở đây không khớp số class quét được).
-nc: 22
-names: []
+nc: 2
+names: [NORMAL, PNEUMONIA]

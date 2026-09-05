@@ -154,7 +154,7 @@ class JointTransform:
                     mask,
                     angle,
                     interpolation=TF.InterpolationMode.NEAREST,
-                    fill=255 if self.mask_mode == "ade150" else 0,
+                    fill=255 if self.mask_mode in ("ade150", "voc21") else 0,
                 )
             if self.color_jitter is not None:
                 img = self.color_jitter(img)  # chỉ áp lên ảnh, KHÔNG áp lên mask
